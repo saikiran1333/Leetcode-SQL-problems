@@ -1,0 +1,1444 @@
+577. Employee Bonus
+Employee table:
++-------+--------+------------+--------+
+| empId | name   | supervisor | salary |
++-------+--------+------------+--------+
+| 3     | Brad   | null       | 4000   |
+| 1     | John   | 3          | 1000   |
+| 2     | Dan    | 3          | 2000   |
+| 4     | Thomas | 3          | 4000   |
++-------+--------+------------+--------+
+Bonus table:
++-------+-------+
+| empId | bonus |
++-------+-------+
+| 2     | 500   |
+| 4     | 2000  |
++-------+-------+
+Output: 
++------+-------+
+| name | bonus |
++------+-------+
+| Brad | null  |
+| John | null  |
+| Dan  | 500   |
++------+-------+
+# Write your MySQL query statement below
+select e.name,b.bonus 
+from employee e
+left join bonus b
+on e.empId=b.empId
+where b.bonus<1000
+or b.bonus is null
+----------------------------
+1280. Students and Examinations
+Input: 
+Students table:
++------------+--------------+
+| student_id | student_name |
++------------+--------------+
+| 1          | Alice        |
+| 2          | Bob          |
+| 13         | John         |
+| 6          | Alex         |
++------------+--------------+
+Subjects table:
++--------------+
+| subject_name |
++--------------+
+| Math         |
+| Physics      |
+| Programming  |
++--------------+
+Examinations table:
++------------+--------------+
+| student_id | subject_name |
++------------+--------------+
+| 1          | Math         |
+| 1          | Physics      |
+| 1          | Programming  |
+| 2          | Programming  |
+| 1          | Physics      |
+| 1          | Math         |
+| 13         | Math         |
+| 13         | Programming  |
+| 13         | Physics      |
+| 2          | Math         |
+| 1          | Math         |
++------------+--------------+
+Output: 
++------------+--------------+--------------+----------------+
+| student_id | student_name | subject_name | attended_exams |
++------------+--------------+--------------+----------------+
+| 1          | Alice        | Math         | 3              |
+| 1          | Alice        | Physics      | 2              |
+| 1          | Alice        | Programming  | 1              |
+| 2          | Bob          | Math         | 1              |
+| 2          | Bob          | Physics      | 0              |
+| 2          | Bob          | Programming  | 1              |
+| 6          | Alex         | Math         | 0              |
+| 6          | Alex         | Physics      | 0              |
+| 6          | Alex         | Programming  | 0              |
+| 13         | John         | Math         | 1              |
+| 13         | John         | Physics      | 1              |
+| 13         | John         | Programming  | 1              |
++------------+--------------+--------------+----------------+
+Explanation: 
+The result table should contain all students and all subjects.
+Alice attended the Math exam 3 times, the Physics exam 2 times, and the Programming exam 1 time.
+Bob attended the Math exam 1 time, the Programming exam 1 time, and did not attend the Physics exam.
+Alex did not attend any exams.
+John attended the Math exam 1 time, the Physics exam 1 time, and the Programming exam 1 time.
+
+# Write your MySQL query statement below
+select s.student_id,s.student_name,sub.subject_name,count(e.subject_name) as attended_exams
+from Students s
+cross join Subjects sub
+left join Examinations e
+on s.student_id=e.student_id
+and e.subject_name=sub.subject_name
+group by s.student_id, s.student_name, sub.subject_name
+order by s.student_id,s.student_name
+----------------------------------------------
+1934. Confirmation Rate
+Input: 
+Signups table:
++---------+---------------------+
+| user_id | time_stamp          |
++---------+---------------------+
+| 3       | 2020-03-21 10:16:13 |
+| 7       | 2020-01-04 13:57:59 |
+| 2       | 2020-07-29 23:09:44 |
+| 6       | 2020-12-09 10:39:37 |
++---------+---------------------+
+Confirmations table:
++---------+---------------------+-----------+
+| user_id | time_stamp          | action    |
++---------+---------------------+-----------+
+| 3       | 2021-01-06 03:30:46 | timeout   |
+| 3       | 2021-07-14 14:00:00 | timeout   |
+| 7       | 2021-06-12 11:57:29 | confirmed |
+| 7       | 2021-06-13 12:58:28 | confirmed |
+| 7       | 2021-06-14 13:59:27 | confirmed |
+| 2       | 2021-01-22 00:00:00 | confirmed |
+| 2       | 2021-02-28 23:59:59 | timeout   |
++---------+---------------------+-----------+
+Output: 
++---------+-------------------+
+| user_id | confirmation_rate |
++---------+-------------------+
+| 6       | 0.00              |
+| 3       | 0.00              |
+| 7       | 1.00              |
+| 2       | 0.50              |
++---------+-------------------+
+Explanation: 
+User 6 did not request any confirmation messages. The confirmation rate is 0.
+User 3 made 2 requests and both timed out. The confirmation rate is 0.
+User 7 made 3 requests and all were confirmed. The confirmation rate is 1.
+User 2 made 2 requests where one was confirmed and the other timed out. The confirmation rate is 1 / 2 = 0.5.
+
+# Write your MySQL query statement below
+select s.user_id, round(avg(if(c.action='confirmed',1,0)),2) as confirmation_rate
+from Signups s
+left join Confirmations c
+on s.user_id = c.user_id
+group by s.user_id
+-------------------------------------------------
+1251. Average Selling Price
+Input: 
+Prices table:
++------------+------------+------------+--------+
+| product_id | start_date | end_date   | price  |
++------------+------------+------------+--------+
+| 1          | 2019-02-17 | 2019-02-28 | 5      |
+| 1          | 2019-03-01 | 2019-03-22 | 20     |
+| 2          | 2019-02-01 | 2019-02-20 | 15     |
+| 2          | 2019-02-21 | 2019-03-31 | 30     |
++------------+------------+------------+--------+
+UnitsSold table:
++------------+---------------+-------+
+| product_id | purchase_date | units |
++------------+---------------+-------+
+| 1          | 2019-02-25    | 100   |
+| 1          | 2019-03-01    | 15    |
+| 2          | 2019-02-10    | 200   |
+| 2          | 2019-03-22    | 30    |
++------------+---------------+-------+
+Output: 
++------------+---------------+
+| product_id | average_price |
++------------+---------------+
+| 1          | 6.96          |
+| 2          | 16.96         |
++------------+---------------+
+Explanation: 
+Average selling price = Total Price of Product / Number of products sold.
+Average selling price for product 1 = ((100 * 5) + (15 * 20)) / 115 = 6.96
+Average selling price for product 2 = ((200 * 15) + (30 * 30)) / 230 = 16.96
+
+# Write your MySQL query statement below
+select p.product_id, ifnull(round(sum(p.price*u.units)/sum(u.units),2),0) as average_price
+from prices p
+left join unitssold u
+on p.product_id = u.product_id
+and u.purchase_date between p.start_date and p.end_date
+group by p.product_id
+------------------------------------------------
+1075. Project Employees I
+Input: 
+Project table:
++-------------+-------------+
+| project_id  | employee_id |
++-------------+-------------+
+| 1           | 1           |
+| 1           | 2           |
+| 1           | 3           |
+| 2           | 1           |
+| 2           | 4           |
++-------------+-------------+
+Employee table:
++-------------+--------+------------------+
+| employee_id | name   | experience_years |
++-------------+--------+------------------+
+| 1           | Khaled | 3                |
+| 2           | Ali    | 2                |
+| 3           | John   | 1                |
+| 4           | Doe    | 2                |
++-------------+--------+------------------+
+Output: 
++-------------+---------------+
+| project_id  | average_years |
++-------------+---------------+
+| 1           | 2.00          |
+| 2           | 2.50          |
++-------------+---------------+
+Explanation: The average experience years for the first project is (3 + 2 + 1) / 3 = 2.00 and for the second project is (3 + 2) / 2 = 2.50
+
+# Write your MySQL query statement below
+select p.project_id, round(avg(e.experience_years),2) as average_years
+from Project p
+left join Employee e
+on e.employee_id=p.employee_id
+group by p.project_id;
+----------------------------------------------------
+1633. Percentage of Users Attended a Contest
+Input: 
+Users table:
++---------+-----------+
+| user_id | user_name |
++---------+-----------+
+| 6       | Alice     |
+| 2       | Bob       |
+| 7       | Alex      |
++---------+-----------+
+Register table:
++------------+---------+
+| contest_id | user_id |
++------------+---------+
+| 215        | 6       |
+| 209        | 2       |
+| 208        | 2       |
+| 210        | 6       |
+| 208        | 6       |
+| 209        | 7       |
+| 209        | 6       |
+| 215        | 7       |
+| 208        | 7       |
+| 210        | 2       |
+| 207        | 2       |
+| 210        | 7       |
++------------+---------+
+Output: 
++------------+------------+
+| contest_id | percentage |
++------------+------------+
+| 208        | 100.0      |
+| 209        | 100.0      |
+| 210        | 100.0      |
+| 215        | 66.67      |
+| 207        | 33.33      |
++------------+------------+
+Explanation: 
+All the users registered in contests 208, 209, and 210. The percentage is 100% and we sort them in the answer table by contest_id in ascending order.
+Alice and Alex registered in contest 215 and the percentage is ((2/3) * 100) = 66.67%
+Bob registered in contest 207 and the percentage is ((1/3) * 100) = 33.33%
+
+# Write your MySQL query statement below
+select contest_id, round(count(distinct user_id)*100/(select count(user_id) from users),2) as percentage
+from Register
+group by contest_id
+order by percentage desc,contest_id asc;
+--------------------------------------------------
+1211. Queries Quality and Percentage
+Input: 
+Queries table:
++------------+-------------------+----------+--------+
+| query_name | result            | position | rating |
++------------+-------------------+----------+--------+
+| Dog        | Golden Retriever  | 1        | 5      |
+| Dog        | German Shepherd   | 2        | 5      |
+| Dog        | Mule              | 200      | 1      |
+| Cat        | Shirazi           | 5        | 2      |
+| Cat        | Siamese           | 3        | 3      |
+| Cat        | Sphynx            | 7        | 4      |
++------------+-------------------+----------+--------+
+Output: 
++------------+---------+-----------------------+
+| query_name | quality | poor_query_percentage |
++------------+---------+-----------------------+
+| Dog        | 2.50    | 33.33                 |
+| Cat        | 0.66    | 33.33                 |
++------------+---------+-----------------------+
+Explanation: 
+Dog queries quality is ((5 / 1) + (5 / 2) + (1 / 200)) / 3 = 2.50
+Dog queries poor_ query_percentage is (1 / 3) * 100 = 33.33
+
+Cat queries quality equals ((2 / 5) + (3 / 3) + (4 / 7)) / 3 = 0.66
+Cat queries poor_ query_percentage is (1 / 3) * 100 = 33.33
+
+# Write your MySQL query statement below
+select query_name, round(avg(rating/position),2) as quality, round(avg(if(rating<3,1,0)*100),2) as poor_query_percentage
+from queries
+where query_name is not null
+group by query_name;
+---------------------------------------------
+1193. Monthly Transactions I
+Example 1:
+
+Input: 
+Transactions table:
++------+---------+----------+--------+------------+
+| id   | country | state    | amount | trans_date |
++------+---------+----------+--------+------------+
+| 121  | US      | approved | 1000   | 2018-12-18 |
+| 122  | US      | declined | 2000   | 2018-12-19 |
+| 123  | US      | approved | 2000   | 2019-01-01 |
+| 124  | DE      | approved | 2000   | 2019-01-07 |
++------+---------+----------+--------+------------+
+Output: 
++----------+---------+-------------+----------------+--------------------+-----------------------+
+| month    | country | trans_count | approved_count | trans_total_amount | approved_total_amount |
++----------+---------+-------------+----------------+--------------------+-----------------------+
+| 2018-12  | US      | 2           | 1              | 3000               | 1000                  |
+| 2019-01  | US      | 1           | 1              | 2000               | 2000                  |
+| 2019-01  | DE      | 1           | 1              | 2000               | 2000                  |
++----------+---------+-------------+----------------+--------------------+-----------------------+
+
+# Write your MySQL query statement below
+select date_format(trans_date,'%Y-%m') as month,
+country,
+count(id) as trans_count,
+sum(if(state='approved',1,0)) as approved_count,
+sum(amount) as trans_total_amount,
+sum(if(state='approved',amount,0)) as approved_total_amount
+from transactions 
+group by month,country;
+----------------------------------------------------
+1174. Immediate Food Delivery II
+Example 1:
+
+Input: 
+Delivery table:
++-------------+-------------+------------+-----------------------------+
+| delivery_id | customer_id | order_date | customer_pref_delivery_date |
++-------------+-------------+------------+-----------------------------+
+| 1           | 1           | 2019-08-01 | 2019-08-02                  |
+| 2           | 2           | 2019-08-02 | 2019-08-02                  |
+| 3           | 1           | 2019-08-11 | 2019-08-12                  |
+| 4           | 3           | 2019-08-24 | 2019-08-24                  |
+| 5           | 3           | 2019-08-21 | 2019-08-22                  |
+| 6           | 2           | 2019-08-11 | 2019-08-13                  |
+| 7           | 4           | 2019-08-09 | 2019-08-09                  |
++-------------+-------------+------------+-----------------------------+
+Output: 
++----------------------+
+| immediate_percentage |
++----------------------+
+| 50.00                |
++----------------------+
+Explanation: 
+The customer id 1 has a first order with delivery id 1 and it is scheduled.
+The customer id 2 has a first order with delivery id 2 and it is immediate.
+The customer id 3 has a first order with delivery id 5 and it is scheduled.
+The customer id 4 has a first order with delivery id 7 and it is immediate.
+Hence, half the customers have immediate first orders.
+
+# Write your MySQL query statement below
+select round(sum(if(min_order_date=min_customer_pref_delivery_date,1,0)*100)/count(min_order_date),2) as immediate_percentage
+from 
+(select delivery_id,
+customer_id,
+min(order_date) as min_order_date,
+min(customer_pref_delivery_date) as min_customer_pref_delivery_date
+from delivery
+group by customer_id) as new_table
+--------------------------------------------------
+550. Game Play Analysis IV
+Example 1:
+
+Input: 
+Activity table:
++-----------+-----------+------------+--------------+
+| player_id | device_id | event_date | games_played |
++-----------+-----------+------------+--------------+
+| 1         | 2         | 2016-03-01 | 5            |
+| 1         | 2         | 2016-03-02 | 6            |
+| 2         | 3         | 2017-06-25 | 1            |
+| 3         | 1         | 2016-03-02 | 0            |
+| 3         | 4         | 2018-07-03 | 5            |
++-----------+-----------+------------+--------------+
+Output: 
++-----------+
+| fraction  |
++-----------+
+| 0.33      |
++-----------+
+Explanation: 
+Only the player with id 1 logged back in after the first day he had logged in so the answer is 1/3 = 0.33
+
+# Write your MySQL query statement below
+select round(sum(player_login)/count(distinct player_id),2) as fraction
+from 
+(select player_id,
+datediff(event_date,min(event_date) over(partition by player_id))=1 as player_login
+from activity) as new_table;
+-----------------------------------------------------
+2356. Number of Unique Subjects Taught by Each
+Example 1:
+
+Input: 
+Teacher table:
++------------+------------+---------+
+| teacher_id | subject_id | dept_id |
++------------+------------+---------+
+| 1          | 2          | 3       |
+| 1          | 2          | 4       |
+| 1          | 3          | 3       |
+| 2          | 1          | 1       |
+| 2          | 2          | 1       |
+| 2          | 3          | 1       |
+| 2          | 4          | 1       |
++------------+------------+---------+
+Output:  
++------------+-----+
+| teacher_id | cnt |
++------------+-----+
+| 1          | 2   |
+| 2          | 4   |
++------------+-----+
+Explanation: 
+Teacher 1:
+  - They teach subject 2 in departments 3 and 4.
+  - They teach subject 3 in department 3.
+Teacher 2:
+  - They teach subject 1 in department 1.
+  - They teach subject 2 in department 1.
+  - They teach subject 3 in department 1.
+  - They teach subject 4 in department 1.
+
+# Write your MySQL query statement below
+select teacher_id,
+count(distinct subject_id) as cnt
+from teacher
+group by teacher_id;
+-----------------------------------------------------
+1141. User Activity for the Past 30 Days I
+Example 1:
+
+Input: 
+Activity table:
++---------+------------+---------------+---------------+
+| user_id | session_id | activity_date | activity_type |
++---------+------------+---------------+---------------+
+| 1       | 1          | 2019-07-20    | open_session  |
+| 1       | 1          | 2019-07-20    | scroll_down   |
+| 1       | 1          | 2019-07-20    | end_session   |
+| 2       | 4          | 2019-07-20    | open_session  |
+| 2       | 4          | 2019-07-21    | send_message  |
+| 2       | 4          | 2019-07-21    | end_session   |
+| 3       | 2          | 2019-07-21    | open_session  |
+| 3       | 2          | 2019-07-21    | send_message  |
+| 3       | 2          | 2019-07-21    | end_session   |
+| 4       | 3          | 2019-06-25    | open_session  |
+| 4       | 3          | 2019-06-25    | end_session   |
++---------+------------+---------------+---------------+
+Output: 
++------------+--------------+ 
+| day        | active_users |
++------------+--------------+ 
+| 2019-07-20 | 2            |
+| 2019-07-21 | 2            |
++------------+--------------+ 
+Explanation: Note that we do not care about days with zero active users
+
+# Write your MySQL query statement below
+select 
+activity_date as day,
+count(distinct user_id) as active_users
+from activity
+where
+activity_date between date_sub('2019-07-27', interval 29 day) and '2019-07-27'
+group by day;
+-----------------------------------------------
+1070. Product Sales Analysis III
+
+Input: 
+Sales table:
++---------+------------+------+----------+-------+
+| sale_id | product_id | year | quantity | price |
++---------+------------+------+----------+-------+ 
+| 1       | 100        | 2008 | 10       | 5000  |
+| 2       | 100        | 2009 | 12       | 5000  |
+| 7       | 200        | 2011 | 15       | 9000  |
++---------+------------+------+----------+-------+
+Product table:
++------------+--------------+
+| product_id | product_name |
++------------+--------------+
+| 100        | Nokia        |
+| 200        | Apple        |
+| 300        | Samsung      |
++------------+--------------+
+Output: 
++------------+------------+----------+-------+
+| product_id | first_year | quantity | price |
++------------+------------+----------+-------+ 
+| 100        | 2008       | 10       | 5000  |
+| 200        | 2011       | 15       | 9000  |
++------------+------------+----------+-------+
+
+# Write your MySQL query statement below
+select product_id, year as first_year, quantity, price
+from sales
+where ((product_id, year) in (select product_id, min(year) from sales group by product_id));
+--------------------------------------------------------
+596. Classes More Than 5 Students
+Input: 
+Courses table:
++---------+----------+
+| student | class    |
++---------+----------+
+| A       | Math     |
+| B       | English  |
+| C       | Math     |
+| D       | Biology  |
+| E       | Math     |
+| F       | Computer |
+| G       | Math     |
+| H       | Math     |
+| I       | Math     |
++---------+----------+
+Output: 
++---------+
+| class   |
++---------+
+| Math    |
++---------+
+Explanation: 
+- Math has 6 students, so we include it.
+- English has 1 student, so we do not include it.
+- Biology has 1 student, so we do not include it.
+- Computer has 1 student, so we do not include it.
+
+# Write your MySQL query statement below
+select class
+from courses
+group by class
+having count(student) >=5;
+-----------------------------------------------------
+1729. Find Followers Count
+Input: 
+Followers table:
++---------+-------------+
+| user_id | follower_id |
++---------+-------------+
+| 0       | 1           |
+| 1       | 0           |
+| 2       | 0           |
+| 2       | 1           |
++---------+-------------+
+Output: 
++---------+----------------+
+| user_id | followers_count|
++---------+----------------+
+| 0       | 1              |
+| 1       | 1              |
+| 2       | 2              |
++---------+----------------+
+Explanation: 
+The followers of 0 are {1}
+The followers of 1 are {0}
+The followers of 2 are {0,1}
+
+# Write your MySQL query statement below
+select user_id, count(follower_id) as followers_count
+from followers
+group by user_id
+order by user_id
+-----------------------------------------------------
+619. Biggest Single Number
+Input: 
+MyNumbers table:
++-----+
+| num |
++-----+
+| 8   |
+| 8   |
+| 3   |
+| 3   |
+| 1   |
+| 4   |
+| 5   |
+| 6   |
++-----+
+Output: 
++-----+
+| num |
++-----+
+| 6   |
++-----+
+Explanation: The single numbers are 1, 4, 5, and 6.
+Since 6 is the largest single number, we return it.
+
+# Write your MySQL query statement below
+select max(num) as num 
+from
+(select num from Mynumbers
+group by num
+having count(num)=1) as new_table;
+---------------------------------------------------
+1045. Customers Who Bought All Products
+Example 1:
+
+Input: 
+Customer table:
++-------------+-------------+
+| customer_id | product_key |
++-------------+-------------+
+| 1           | 5           |
+| 2           | 6           |
+| 3           | 5           |
+| 3           | 6           |
+| 1           | 6           |
++-------------+-------------+
+Product table:
++-------------+
+| product_key |
++-------------+
+| 5           |
+| 6           |
++-------------+
+Output: 
++-------------+
+| customer_id |
++-------------+
+| 1           |
+| 3           |
++-------------+
+Explanation: 
+The customers who bought all the products (5 and 6) are customers with IDs 1 and 3.
+
+# Write your MySQL query statement below
+select customer_id
+from customer 
+group by customer_id
+having count(distinct product_key)=(select count(product_key) from product)
+-------------------------------------------------
+1731. The Number of Employees Which Report to Each Employee
+Example 1:
+
+Input: 
+Employees table:
++-------------+---------+------------+-----+
+| employee_id | name    | reports_to | age |
++-------------+---------+------------+-----+
+| 9           | Hercy   | null       | 43  |
+| 6           | Alice   | 9          | 41  |
+| 4           | Bob     | 9          | 36  |
+| 2           | Winston | null       | 37  |
++-------------+---------+------------+-----+
+Output: 
++-------------+-------+---------------+-------------+
+| employee_id | name  | reports_count | average_age |
++-------------+-------+---------------+-------------+
+| 9           | Hercy | 2             | 39          |
++-------------+-------+---------------+-------------+
+Explanation: Hercy has 2 people report directly to him, Alice and Bob. Their average age is (41+36)/2 = 38.5, which is 39 after rounding it to the nearest integer.
+
+# Write your MySQL query statement below
+select e1.employee_id,e1.name,
+count(e2.reports_to) as reports_count,
+round(avg(e2.age)) as average_age
+from employees e1
+inner join employees e2
+on e1.employee_id=e2.reports_to
+group by e1.employee_id
+order by e1.employee_id
+-------------------------------------------------------------
+
+1789. Primary Department for Each Employee
+Example 1:
+
+Input: 
+Employee table:
++-------------+---------------+--------------+
+| employee_id | department_id | primary_flag |
++-------------+---------------+--------------+
+| 1           | 1             | N            |
+| 2           | 1             | Y            |
+| 2           | 2             | N            |
+| 3           | 3             | N            |
+| 4           | 2             | N            |
+| 4           | 3             | Y            |
+| 4           | 4             | N            |
++-------------+---------------+--------------+
+Output: 
++-------------+---------------+
+| employee_id | department_id |
++-------------+---------------+
+| 1           | 1             |
+| 2           | 1             |
+| 3           | 3             |
+| 4           | 3             |
++-------------+---------------+
+Explanation: 
+- The Primary department for employee 1 is 1.
+- The Primary department for employee 2 is 1.
+- The Primary department for employee 3 is 3.
+- The Primary department for employee 4 is 3.
+
+# Write your MySQL query statement below
+select employee_id,department_id
+from employee
+where primary_flag='Y'
+group by employee_id
+union
+select employee_id,department_id
+from employee
+group by employee_id
+having count(employee_id)=1
+------------------------------------------------------
+610. Triangle Judgement
+Input: 
+Triangle table:
++----+----+----+
+| x  | y  | z  |
++----+----+----+
+| 13 | 15 | 30 |
+| 10 | 20 | 15 |
++----+----+----+
+Output: 
++----+----+----+----------+
+| x  | y  | z  | triangle |
++----+----+----+----------+
+| 13 | 15 | 30 | No       |
+| 10 | 20 | 15 | Yes      |
++----+----+----+----------+
+
+# Write your MySQL query statement below
+select x,y,z,
+case when x+y>z and y+z>x and x+z>y then 'Yes' else 'No' end as triangle
+from triangle
+--------------------------------------------------------------
+180. Consecutive Numbers
+Example 1:
+
+Input: 
+Logs table:
++----+-----+
+| id | num |
++----+-----+
+| 1  | 1   |
+| 2  | 1   |
+| 3  | 1   |
+| 4  | 2   |
+| 5  | 1   |
+| 6  | 2   |
+| 7  | 2   |
++----+-----+
+Output: 
++-----------------+
+| ConsecutiveNums |
++-----------------+
+| 1               |
++-----------------+
+Explanation: 1 is the only number that appears consecutively for at least three times.
+
+# Write your MySQL query statement below
+select l1.num as ConsecutiveNums
+from logs l1,logs l2,logs l3
+where l1.id-l2.id=1
+and l2.id-l3.id=1
+and l1.num=l2.num
+and l2.num=l3.num
+and l1.num=l3.num
+group by l1.num
+--------------------------------------------------
+1164. Product Price at a Given Date
+Input: 
+Products table:
++------------+-----------+-------------+
+| product_id | new_price | change_date |
++------------+-----------+-------------+
+| 1          | 20        | 2019-08-14  |
+| 2          | 50        | 2019-08-14  |
+| 1          | 30        | 2019-08-15  |
+| 1          | 35        | 2019-08-16  |
+| 2          | 65        | 2019-08-17  |
+| 3          | 20        | 2019-08-18  |
++------------+-----------+-------------+
+Output: 
++------------+-------+
+| product_id | price |
++------------+-------+
+| 2          | 50    |
+| 1          | 35    |
+| 3          | 10    |
++------------+-------+
+
+# Write your MySQL query statement below
+select product_id,new_price as price
+from products 
+where(product_id,change_date) in
+(
+    select product_id,max(change_date)
+    from products
+    where change_date<='2019-08-16'
+    group by product_id
+)
+union 
+select product_id,10 as price
+from products 
+where(product_id) not in
+(
+    select product_id
+    from products
+    where change_date<='2019-08-16'
+    group by product_id
+)
+-----------------------------------------------------
+1204. Last Person to Fit in the Bus
+Input: 
+Queue table:
++-----------+-------------+--------+------+
+| person_id | person_name | weight | turn |
++-----------+-------------+--------+------+
+| 5         | Alice       | 250    | 1    |
+| 4         | Bob         | 175    | 5    |
+| 3         | Alex        | 350    | 2    |
+| 6         | John Cena   | 400    | 3    |
+| 1         | Winston     | 500    | 6    |
+| 2         | Marie       | 200    | 4    |
++-----------+-------------+--------+------+
+Output: 
++-------------+
+| person_name |
++-------------+
+| John Cena   |
++-------------+
+Explanation: The folowing table is ordered by the turn for simplicity.
++------+----+-----------+--------+--------------+
+| Turn | ID | Name      | Weight | Total Weight |
++------+----+-----------+--------+--------------+
+| 1    | 5  | Alice     | 250    | 250          |
+| 2    | 3  | Alex      | 350    | 600          |
+| 3    | 6  | John Cena | 400    | 1000         | (last person to board)
+| 4    | 2  | Marie     | 200    | 1200         | (cannot board)
+| 5    | 4  | Bob       | 175    | ___          |
+| 6    | 1  | Winston   | 500    | ___          |
++------+----+-----------+--------+--------------+
+
+# Write your MySQL query statement below
+select q1.person_name
+from queue q1
+inner join queue q2
+on q1.turn >=q2.turn
+group by q1.turn
+having sum(q2.weight)<=1000
+order by q1.turn desc limit 1
+----------------------------------------------------------------------
+1907. Count Salary Categories
+Input: 
+Accounts table:
++------------+--------+
+| account_id | income |
++------------+--------+
+| 3          | 108939 |
+| 2          | 12747  |
+| 8          | 87709  |
+| 6          | 91796  |
++------------+--------+
+Output: 
++----------------+----------------+
+| category       | accounts_count |
++----------------+----------------+
+| Low Salary     | 1              |
+| Average Salary | 0              |
+| High Salary    | 3              |
++----------------+----------------+
+Explanation: 
+Low Salary: Account 2.
+Average Salary: No accounts.
+High Salary: Accounts 3, 6, and 8.
+
+# Write your MySQL query statement below
+select "Low Salary" as category,
+sum(if(income <20000,1,0)) as accounts_count
+from accounts
+union 
+select "Average Salary" as category,
+sum(if(income between 20000 and 50000,1,0)) as accounts_count
+from accounts
+union 
+select "High Salary" as category,
+sum(if(income >50000,1,0)) as accounts_count
+from accounts
+--------------------------------------------------------------
+1978. Employees Whose Manager Left the Company
+Example 1:
+
+Input:  
+Employees table:
++-------------+-----------+------------+--------+
+| employee_id | name      | manager_id | salary |
++-------------+-----------+------------+--------+
+| 3           | Mila      | 9          | 60301  |
+| 12          | Antonella | null       | 31000  |
+| 13          | Emery     | null       | 67084  |
+| 1           | Kalel     | 11         | 21241  |
+| 9           | Mikaela   | null       | 50937  |
+| 11          | Joziah    | 6          | 28485  |
++-------------+-----------+------------+--------+
+Output: 
++-------------+
+| employee_id |
++-------------+
+| 11          |
++-------------+
+
+Explanation: 
+The employees with a salary less than $30000 are 1 (Kalel) and 11 (Joziah).
+Kalel's manager is employee 11, who is still in the company (Joziah).
+Joziah's manager is employee 6, who left the company because there is no row for employee 6 as it was deleted.
+
+# Write your MySQL query statement below
+select employee_id
+from employees
+where salary<30000
+and manager_id not in (select employee_id from employees)
+order by employee_id
+------------------------------------------------------
+626. Exchange Seats
+Input: 
+Seat table:
++----+---------+
+| id | student |
++----+---------+
+| 1  | Abbot   |
+| 2  | Doris   |
+| 3  | Emerson |
+| 4  | Green   |
+| 5  | Jeames  |
++----+---------+
+Output: 
++----+---------+
+| id | student |
++----+---------+
+| 1  | Doris   |
+| 2  | Abbot   |
+| 3  | Green   |
+| 4  | Emerson |
+| 5  | Jeames  |
++----+---------+
+Explanation: 
+Note that if the number of students is odd, there is no need to change the last one's seat.
+
+# Write your MySQL query statement below
+select 
+case
+when id=(select max(id) from seat) and id%2=1 then id
+when id%2=1 then id+1 else id-1 end as id,
+student
+from seat
+order by id
+----------------------------------------------------------
+1341. Movie Rating
+Example 1:
+
+Input: 
+Movies table:
++-------------+--------------+
+| movie_id    |  title       |
++-------------+--------------+
+| 1           | Avengers     |
+| 2           | Frozen 2     |
+| 3           | Joker        |
++-------------+--------------+
+Users table:
++-------------+--------------+
+| user_id     |  name        |
++-------------+--------------+
+| 1           | Daniel       |
+| 2           | Monica       |
+| 3           | Maria        |
+| 4           | James        |
++-------------+--------------+
+MovieRating table:
++-------------+--------------+--------------+-------------+
+| movie_id    | user_id      | rating       | created_at  |
++-------------+--------------+--------------+-------------+
+| 1           | 1            | 3            | 2020-01-12  |
+| 1           | 2            | 4            | 2020-02-11  |
+| 1           | 3            | 2            | 2020-02-12  |
+| 1           | 4            | 1            | 2020-01-01  |
+| 2           | 1            | 5            | 2020-02-17  | 
+| 2           | 2            | 2            | 2020-02-01  | 
+| 2           | 3            | 2            | 2020-03-01  |
+| 3           | 1            | 3            | 2020-02-22  | 
+| 3           | 2            | 4            | 2020-02-25  | 
++-------------+--------------+--------------+-------------+
+Output: 
++--------------+
+| results      |
++--------------+
+| Daniel       |
+| Frozen 2     |
++--------------+
+Explanation: 
+Daniel and Monica have rated 3 movies ("Avengers", "Frozen 2" and "Joker") but Daniel is smaller lexicographically.
+Frozen 2 and Joker have a rating average of 3.5 in February but Frozen 2 is smaller lexicographically.
+
+# Write your MySQL query statement below
+(select u.name as results
+from users u
+left join MovieRating mr
+on u.user_id=mr.user_id
+group by u.user_id	
+order by count(mr.user_id) desc,u.name
+limit 1)
+union all
+(select m.title as results
+from movies m
+left join MovieRating mr
+on m.movie_id=mr.movie_id
+where extract(year_month from created_at)=202002
+group by m.movie_id
+order by avg(mr.rating) desc,m.title
+limit 1)
+----------------------------------------------------------------
+
+1321. Restaurant Growth
+Example 1:
+
+Input: 
+Customer table:
++-------------+--------------+--------------+-------------+
+| customer_id | name         | visited_on   | amount      |
++-------------+--------------+--------------+-------------+
+| 1           | Jhon         | 2019-01-01   | 100         |
+| 2           | Daniel       | 2019-01-02   | 110         |
+| 3           | Jade         | 2019-01-03   | 120         |
+| 4           | Khaled       | 2019-01-04   | 130         |
+| 5           | Winston      | 2019-01-05   | 110         | 
+| 6           | Elvis        | 2019-01-06   | 140         | 
+| 7           | Anna         | 2019-01-07   | 150         |
+| 8           | Maria        | 2019-01-08   | 80          |
+| 9           | Jaze         | 2019-01-09   | 110         | 
+| 1           | Jhon         | 2019-01-10   | 130         | 
+| 3           | Jade         | 2019-01-10   | 150         | 
++-------------+--------------+--------------+-------------+
+Output: 
++--------------+--------------+----------------+
+| visited_on   | amount       | average_amount |
++--------------+--------------+----------------+
+| 2019-01-07   | 860          | 122.86         |
+| 2019-01-08   | 840          | 120            |
+| 2019-01-09   | 840          | 120            |
+| 2019-01-10   | 1000         | 142.86         |
++--------------+--------------+----------------+
+Explanation: 
+1st moving average from 2019-01-01 to 2019-01-07 has an average_amount of (100 + 110 + 120 + 130 + 110 + 140 + 150)/7 = 122.86
+2nd moving average from 2019-01-02 to 2019-01-08 has an average_amount of (110 + 120 + 130 + 110 + 140 + 150 + 80)/7 = 120
+3rd moving average from 2019-01-03 to 2019-01-09 has an average_amount of (120 + 130 + 110 + 140 + 150 + 80 + 110)/7 = 120
+4th moving average from 2019-01-04 to 2019-01-10 has an average_amount of (130 + 110 + 140 + 150 + 80 + 110 + 130 + 150)/7 = 142.86
+
+# Write your MySQL query statement below
+select visited_on,
+(
+    select sum(amount)
+    from customer
+    where visited_on between date_sub(c.visited_on,interval 6 day)
+    and c.visited_on
+) as amount,
+round((
+    select sum(amount)/7
+    from customer
+    where visited_on between date_sub(c.visited_on,interval 6 day)
+    and c.visited_on
+),2) as average_amount
+from customer c
+where visited_on >=(
+    select date_add(min(visited_on),interval 6 day)
+    from customer
+)
+group by visited_on
+order by visited_on
+-------------------------------------------------------
+602. Friend Requests II: Who Has the Most Friends
+Example 1:
+
+Input: 
+RequestAccepted table:
++--------------+-------------+-------------+
+| requester_id | accepter_id | accept_date |
++--------------+-------------+-------------+
+| 1            | 2           | 2016/06/03  |
+| 1            | 3           | 2016/06/08  |
+| 2            | 3           | 2016/06/08  |
+| 3            | 4           | 2016/06/09  |
++--------------+-------------+-------------+
+Output: 
++----+-----+
+| id | num |
++----+-----+
+| 3  | 3   |
++----+-----+
+Explanation: 
+The person with id 3 is a friend of people 1, 2, and 4, so he has three friends in total, which is the most number than any others.
+
+# Write your MySQL query statement below
+select id,count(id) as num from
+(select requester_id as id from RequestAccepted
+union all
+select accepter_id as id from RequestAccepted) temp
+group by id
+order by num desc
+limit 1 
+-------------------------------------------------------------------
+585. Investments in 2016
+Example 1:
+
+Input: 
+Insurance table:
++-----+----------+----------+-----+-----+
+| pid | tiv_2015 | tiv_2016 | lat | lon |
++-----+----------+----------+-----+-----+
+| 1   | 10       | 5        | 10  | 10  |
+| 2   | 20       | 20       | 20  | 20  |
+| 3   | 10       | 30       | 20  | 20  |
+| 4   | 10       | 40       | 40  | 40  |
++-----+----------+----------+-----+-----+
+Output: 
++----------+
+| tiv_2016 |
++----------+
+| 45.00    |
++----------+
+Explanation: 
+The first record in the table, like the last record, meets both of the two criteria.
+The tiv_2015 value 10 is the same as the third and fourth records, and its location is unique.
+
+The second record does not meet any of the two criteria. Its tiv_2015 is not like any other policyholders and its location is the same as the third record, which makes the third record fail, too.
+So, the result is the sum of tiv_2016 of the first and last record, which is 45.
+
+# Write your MySQL query statement below
+select round(sum(tiv_2016),2) as tiv_2016
+from insurance
+where tiv_2015 in (
+    select tiv_2015
+    from insurance
+    group by tiv_2015
+    having count(*)>1
+) 
+and (lat,lon) in (
+    select lat,lon
+    from insurance
+    group by lat,lon
+    having count(*)=1
+)
+
+-----------------------------------------------------------
+185. Department Top Three Salaries
+Example 1:
+
+Input: 
+Employee table:
++----+-------+--------+--------------+
+| id | name  | salary | departmentId |
++----+-------+--------+--------------+
+| 1  | Joe   | 85000  | 1            |
+| 2  | Henry | 80000  | 2            |
+| 3  | Sam   | 60000  | 2            |
+| 4  | Max   | 90000  | 1            |
+| 5  | Janet | 69000  | 1            |
+| 6  | Randy | 85000  | 1            |
+| 7  | Will  | 70000  | 1            |
++----+-------+--------+--------------+
+Department table:
++----+-------+
+| id | name  |
++----+-------+
+| 1  | IT    |
+| 2  | Sales |
++----+-------+
+Output: 
++------------+----------+--------+
+| Department | Employee | Salary |
++------------+----------+--------+
+| IT         | Max      | 90000  |
+| IT         | Joe      | 85000  |
+| IT         | Randy    | 85000  |
+| IT         | Will     | 70000  |
+| Sales      | Henry    | 80000  |
+| Sales      | Sam      | 60000  |
++------------+----------+--------+
+Explanation: 
+In the IT department:
+- Max earns the highest unique salary
+- Both Randy and Joe earn the second-highest unique salary
+- Will earns the third-highest unique salary
+
+In the Sales department:
+- Henry earns the highest salary
+- Sam earns the second-highest salary
+- There is no third-highest salary as there are only two employees
+
+# Write your MySQL query statement below
+select department, employee, salary from
+(select d.name as department, e.name as employee, e.salary as salary,
+dense_rank() over(partition by d.name order by e.salary desc) as ranks
+from employee e
+left join department d
+on e.departmentId=d.id) temp
+where ranks<=3
+---------------------------------------------------------
+1667. Fix Names in a Table
+Example 1:
+
+Input: 
+Users table:
++---------+-------+
+| user_id | name  |
++---------+-------+
+| 1       | aLice |
+| 2       | bOB   |
++---------+-------+
+Output: 
++---------+-------+
+| user_id | name  |
++---------+-------+
+| 1       | Alice |
+| 2       | Bob   |
++---------+-------+
+
+# Write your MySQL query statement below
+select user_id,
+concat(upper(left(name,1)), lower(right(name,length(name)-1))) as name
+from users
+order by user_id
+-----------------------------------------------------------
+1527. Patients With a Condition
+Example 1:
+
+Input: 
+Patients table:
++------------+--------------+--------------+
+| patient_id | patient_name | conditions   |
++------------+--------------+--------------+
+| 1          | Daniel       | YFEV COUGH   |
+| 2          | Alice        |              |
+| 3          | Bob          | DIAB100 MYOP |
+| 4          | George       | ACNE DIAB100 |
+| 5          | Alain        | DIAB201      |
++------------+--------------+--------------+
+Output: 
++------------+--------------+--------------+
+| patient_id | patient_name | conditions   |
++------------+--------------+--------------+
+| 3          | Bob          | DIAB100 MYOP |
+| 4          | George       | ACNE DIAB100 | 
++------------+--------------+--------------+
+Explanation: Bob and George both have a condition that starts with DIAB1.
+
+# Write your MySQL query statement below
+select *
+from patients
+where conditions like 'DIAB1%'
+or conditions like '% DIAB1%'
+---------------------------------------------------------------------
+196. Delete Duplicate Emails
+Example 1:
+
+Input: 
+Person table:
++----+------------------+
+| id | email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
+| 3  | john@example.com |
++----+------------------+
+Output: 
++----+------------------+
+| id | email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
++----+------------------+
+Explanation: john@example.com is repeated two times. We keep the row with the smallest Id = 1.
+
+# Write your MySQL query statement below
+delete p1
+from person p1,person p2
+where p1.email=p2.email
+and p1.id>p2.id
+------------------------------------------------------
+176. Second Highest Salary
+Example 1:
+
+Input: 
+Employee table:
++----+--------+
+| id | salary |
++----+--------+
+| 1  | 100    |
+| 2  | 200    |
+| 3  | 300    |
++----+--------+
+Output: 
++---------------------+
+| SecondHighestSalary |
++---------------------+
+| 200                 |
++---------------------+
+
+# Write your MySQL query statement below
+select max(salary) as SecondHighestSalary
+from Employee
+where salary not in (select max(salary) from Employee)
+----------------------------------------------------------------
+1484. Group Sold Products By The Date
+Example 1:
+
+Input: 
+Activities table:
++------------+------------+
+| sell_date  | product     |
++------------+------------+
+| 2020-05-30 | Headphone  |
+| 2020-06-01 | Pencil     |
+| 2020-06-02 | Mask       |
+| 2020-05-30 | Basketball |
+| 2020-06-01 | Bible      |
+| 2020-06-02 | Mask       |
+| 2020-05-30 | T-Shirt    |
++------------+------------+
+Output: 
++------------+----------+------------------------------+
+| sell_date  | num_sold | products                     |
++------------+----------+------------------------------+
+| 2020-05-30 | 3        | Basketball,Headphone,T-shirt |
+| 2020-06-01 | 2        | Bible,Pencil                 |
+| 2020-06-02 | 1        | Mask                         |
++------------+----------+------------------------------+
+Explanation: 
+For 2020-05-30, Sold items were (Headphone, Basketball, T-shirt), we sort them lexicographically and separate them by a comma.
+For 2020-06-01, Sold items were (Pencil, Bible), we sort them lexicographically and separate them by a comma.
+For 2020-06-02, the Sold item is (Mask), we just return it.
+
+# Write your MySQL query statement below
+select sell_date, count(distinct product) as num_sold,
+GROUP_CONCAT(distinct product order by product separator ',') as products
+from Activities
+group by sell_date
+order by sell_date
+------------------------------------------------------------------------
+1327. List the Products Ordered in a Period
+Example 1:
+
+Input: 
+Products table:
++-------------+-----------------------+------------------+
+| product_id  | product_name          | product_category |
++-------------+-----------------------+------------------+
+| 1           | Leetcode Solutions    | Book             |
+| 2           | Jewels of Stringology | Book             |
+| 3           | HP                    | Laptop           |
+| 4           | Lenovo                | Laptop           |
+| 5           | Leetcode Kit          | T-shirt          |
++-------------+-----------------------+------------------+
+Orders table:
++--------------+--------------+----------+
+| product_id   | order_date   | unit     |
++--------------+--------------+----------+
+| 1            | 2020-02-05   | 60       |
+| 1            | 2020-02-10   | 70       |
+| 2            | 2020-01-18   | 30       |
+| 2            | 2020-02-11   | 80       |
+| 3            | 2020-02-17   | 2        |
+| 3            | 2020-02-24   | 3        |
+| 4            | 2020-03-01   | 20       |
+| 4            | 2020-03-04   | 30       |
+| 4            | 2020-03-04   | 60       |
+| 5            | 2020-02-25   | 50       |
+| 5            | 2020-02-27   | 50       |
+| 5            | 2020-03-01   | 50       |
++--------------+--------------+----------+
+Output: 
++--------------------+---------+
+| product_name       | unit    |
++--------------------+---------+
+| Leetcode Solutions | 130     |
+| Leetcode Kit       | 100     |
++--------------------+---------+
+Explanation: 
+Products with product_id = 1 is ordered in February a total of (60 + 70) = 130.
+Products with product_id = 2 is ordered in February a total of 80.
+Products with product_id = 3 is ordered in February a total of (2 + 3) = 5.
+Products with product_id = 4 was not ordered in February 2020.
+Products with product_id = 5 is ordered in February a total of (50 + 50) = 100.
+
+# Write your MySQL query statement below
+select p.product_name, sum(o.unit) as unit
+from products p
+left join orders o
+on p.product_id = o.product_id
+where extract(year_month from o.order_date)=202002
+group by o.product_id
+having sum(o.unit)>=100
+----------------------------------------------------------------------
+1517. Find Users With Valid E-Mails
+Example 1:
+
+Input: 
+Users table:
++---------+-----------+-------------------------+
+| user_id | name      | mail                    |
++---------+-----------+-------------------------+
+| 1       | Winston   | winston@leetcode.com    |
+| 2       | Jonathan  | jonathanisgreat         |
+| 3       | Annabelle | bella-@leetcode.com     |
+| 4       | Sally     | sally.come@leetcode.com |
+| 5       | Marwan    | quarz#2020@leetcode.com |
+| 6       | David     | david69@gmail.com       |
+| 7       | Shapiro   | .shapo@leetcode.com     |
++---------+-----------+-------------------------+
+Output: 
++---------+-----------+-------------------------+
+| user_id | name      | mail                    |
++---------+-----------+-------------------------+
+| 1       | Winston   | winston@leetcode.com    |
+| 3       | Annabelle | bella-@leetcode.com     |
+| 4       | Sally     | sally.come@leetcode.com |
++---------+-----------+-------------------------+
+Explanation: 
+The mail of user 2 does not have a domain.
+The mail of user 5 has the # sign which is not allowed.
+The mail of user 6 does not have the leetcode domain.
+The mail of user 7 starts with a period.
+
+# Write your MySQL query statement below
+select * from Users
+where mail REGEXP '^[a-zA-Z][a-zA-Z0-9_.-]*@leetcode[.]com$'
+
